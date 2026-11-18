@@ -1,0 +1,72 @@
+# --- datasets (never commit) ---
+archive/
+data/
+*.tfrecord
+*.tfrecord-*
+
+# --- model checkpoints (never commit) ---
+*.pth
+*.pt
+*.ckpt
+*.onnx
+
+# --- generated artifacts ---
+# The manifest is reproducible from the shards via backend/tools/build_manifest.py.
+artifacts/sample_manifest.json
+artifacts/manifests/
+artifacts/predictions/
+artifacts/exports/
+artifacts/validation/
+
+# Local frontend QA captures (final screenshots live in docs/screenshots/).
+frontend/.shots/
+frontend/dist/
+
+# Phase 0 reference fixtures are small derived tensors and stay under version
+# control so preprocessing-parity tests have a stable anchor.
+!artifacts/reference/
+!artifacts/reference/*.npz
+!artifacts/reference/*.json
+!artifacts/reference/*.md
+
+# --- credentials and local config ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+.npmrc
+.pypirc
+id_rsa*
+id_ed25519*
+credentials*
+secrets*
+.envrc
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# --- Node / frontend (future) ---
+node_modules/
+dist/
+.vite/
+
+# --- notebooks / editors / OS ---
+.ipynb_checkpoints/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

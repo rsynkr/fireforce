@@ -1,0 +1,12 @@
+# Runtime dependencies for the local wildfire research API.
+# Python 3.13.5 was used for validation.
+#
+# torch: the validated build is the CPU wheel (2.14.0+cpu). On a CUDA machine,
+# install the matching CUDA wheel from https://pytorch.org/get-started/locally/
+# instead of the plain PyPI wheel.
+fastapi==0.141.1
+uvicorn==0.52.4
+pydantic==2.13.5
+numpy==2.5.3
+tensorflow==2.21.0
+torch==2.14.0

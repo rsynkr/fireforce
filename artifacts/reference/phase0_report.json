@@ -1,0 +1,147 @@
+{
+  "phase": 0,
+  "pipeline_source": "first.ipynb (architecture + preprocessing), second (1).ipynb (thresholds)",
+  "normalization_epsilon": 1e-08,
+  "device": "cpu",
+  "shard": "next_day_wildfire_spread_eval_00.tfrecord",
+  "shard_size_bytes": 213313000,
+  "samples": {
+    "all_unknown": {
+      "record_index": 9,
+      "split": "eval",
+      "record_sha256": "cccde8e77bfb293bc18bdc08b26e87bf4d706abb9a5dca408dfa6a1bb76827b7",
+      "valid_pixels": 0,
+      "fire_pixels": 0,
+      "unknown_pixels": 4096,
+      "prev_fire_pixels": 13,
+      "prev_unknown_pixels": 0,
+      "models": {
+        "M1": {
+          "threshold": 0.94,
+          "checkpoint_sha256": "3ec708fa1bca276f4b4d23778a4d5cb2b0e56c14913facac8c06bb589047f15f",
+          "prob_min": 0.0023045549169182777,
+          "prob_max": 0.9874539375305176,
+          "prob_mean": 0.029683813452720642,
+          "predicted_fire_pixels": 21,
+          "metrics_masked": {
+            "available": false,
+            "reason": "no_valid_target_pixels"
+          }
+        },
+        "M2": {
+          "threshold": 0.94,
+          "checkpoint_sha256": "8174294b8dcacd1ca498e1d3458f9b3398108beb14f3e04ca79a5f159802daf5",
+          "prob_min": 2.260499240946956e-05,
+          "prob_max": 0.8479095101356506,
+          "prob_mean": 0.005499081686139107,
+          "predicted_fire_pixels": 0,
+          "metrics_masked": {
+            "available": false,
+            "reason": "no_valid_target_pixels"
+          }
+        },
+        "M3": {
+          "threshold": 0.93,
+          "checkpoint_sha256": "0bb918788309eaa65568338665b170901e860da7f6d4a035ccad06bc0644db75",
+          "prob_min": 0.00030367900035344064,
+          "prob_max": 0.9967273473739624,
+          "prob_mean": 0.012917334213852882,
+          "predicted_fire_pixels": 18,
+          "metrics_masked": {
+            "available": false,
+            "reason": "no_valid_target_pixels"
+          }
+        }
+      }
+    },
+    "fire": {
+      "record_index": 27,
+      "split": "eval",
+      "record_sha256": "8422d94368545a4808c6fb3edf4bbf277b8c9fe2bd3e4bf8d4d25603aee49915",
+      "valid_pixels": 4096,
+      "fire_pixels": 21,
+      "unknown_pixels": 0,
+      "prev_fire_pixels": 5,
+      "prev_unknown_pixels": 13,
+      "models": {
+        "M1": {
+          "threshold": 0.94,
+          "checkpoint_sha256": "3ec708fa1bca276f4b4d23778a4d5cb2b0e56c14913facac8c06bb589047f15f",
+          "prob_min": 0.0011042057303711772,
+          "prob_max": 0.9915826916694641,
+          "prob_mean": 0.022922329604625702,
+          "predicted_fire_pixels": 23,
+          "metrics_masked": {
+            "available": true,
+            "valid_pixels": 4096,
+            "TP": 15,
+            "FP": 8,
+            "FN": 6,
+            "TN": 4067,
+            "precision": 0.6521739130434783,
+            "recall": 0.7142857142857143,
+            "dice": 0.6818181818181818,
+            "iou": 0.5172413793103449
+          }
+        },
+        "M2": {
+          "threshold": 0.94,
+          "checkpoint_sha256": "8174294b8dcacd1ca498e1d3458f9b3398108beb14f3e04ca79a5f159802daf5",
+          "prob_min": 0.0012837204849347472,
+          "prob_max": 0.9665325880050659,
+          "prob_mean": 0.016094211488962173,
+          "predicted_fire_pixels": 6,
+          "metrics_masked": {
+            "available": true,
+            "valid_pixels": 4096,
+            "TP": 5,
+            "FP": 1,
+            "FN": 16,
+            "TN": 4074,
+            "precision": 0.8333333333333334,
+            "recall": 0.23809523809523808,
+            "dice": 0.37037037037037035,
+            "iou": 0.22727272727272727
+          }
+        },
+        "M3": {
+          "threshold": 0.93,
+          "checkpoint_sha256": "0bb918788309eaa65568338665b170901e860da7f6d4a035ccad06bc0644db75",
+          "prob_min": 0.0007667365134693682,
+          "prob_max": 0.9964832067489624,
+          "prob_mean": 0.024557575583457947,
+          "predicted_fire_pixels": 18,
+          "metrics_masked": {
+            "available": true,
+            "valid_pixels": 4096,
+            "TP": 15,
+            "FP": 3,
+            "FN": 6,
+            "TN": 4072,
+            "precision": 0.8333333333333334,
+            "recall": 0.7142857142857143,
+            "dice": 0.7692307692307693,
+            "iou": 0.625
+          }
+        }
+      }
+    }
+  },
+  "checkpoints": {
+    "M1": {
+      "file": "model_1_best.pth",
+      "in_channels": 1,
+      "sha256": "3ec708fa1bca276f4b4d23778a4d5cb2b0e56c14913facac8c06bb589047f15f"
+    },
+    "M2": {
+      "file": "model_2_best.pth",
+      "in_channels": 8,
+      "sha256": "8174294b8dcacd1ca498e1d3458f9b3398108beb14f3e04ca79a5f159802daf5"
+    },
+    "M3": {
+      "file": "model_3_best.pth",
+      "in_channels": 13,
+      "sha256": "0bb918788309eaa65568338665b170901e860da7f6d4a035ccad06bc0644db75"
+    }
+  }
+}

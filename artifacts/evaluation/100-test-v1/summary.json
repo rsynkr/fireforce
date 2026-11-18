@@ -1,0 +1,293 @@
+{
+  "evaluation_version": "100-test-v1",
+  "split": "test",
+  "sampling": {
+    "strategy": "candidate IDs sorted; rank by sha256(f'{seed}:{sample_id}') ascending; take the lowest count; sort selection by sample_id",
+    "seed": 20261118,
+    "count": 100
+  },
+  "counts": {
+    "selected": 100,
+    "valid_samples": 100,
+    "all_unknown_samples": 0,
+    "excluded_sample_ids": [],
+    "valid_pixels": 404679,
+    "actual_fire_pixels": 5264
+  },
+  "thresholds": {
+    "M1": 0.94,
+    "M2": 0.94,
+    "M3": 0.93
+  },
+  "threshold_provenance": "Validation-selected thresholds recorded with the project (M1=0.94, M2=0.94, M3=0.93). The original notebook's stored validation sweep outputs show maximum Dice at these values; this build has not re-run that sweep.",
+  "models": {
+    "M1": {
+      "threshold": 0.94,
+      "in_channels": 1,
+      "micro": {
+        "precision": 0.24886220586811272,
+        "recall": 0.48822188449848025,
+        "f1_dice": 0.32967737797447244,
+        "iou": 0.19737347361953766,
+        "accuracy": 0.9741745927018699,
+        "valid_pixels": 404679
+      },
+      "macro": {
+        "precision": 0.2539795682270226,
+        "recall": 0.48473281110659305,
+        "f1_dice": 0.2803776222786082,
+        "iou": 0.17862610361657777,
+        "accuracy": 0.9744389345488862,
+        "samples": 100
+      },
+      "counts": {
+        "true_positive": 2570,
+        "false_positive": 7757,
+        "false_negative": 2694,
+        "true_negative": 391658
+      },
+      "predicted": {
+        "total": 10332,
+        "mean": 103.32,
+        "median": 39.5,
+        "max": 716,
+        "on_valid_pixels": 10327,
+        "on_unknown_pixels": 5,
+        "percent_of_valid_pixels": 2.5518991595808034
+      }
+    },
+    "M2": {
+      "threshold": 0.94,
+      "in_channels": 8,
+      "micro": {
+        "precision": 0.33666956774006385,
+        "recall": 0.440919452887538,
+        "f1_dice": 0.3818062181279816,
+        "iou": 0.23594591847107857,
+        "accuracy": 0.9814272546882838,
+        "valid_pixels": 404679
+      },
+      "macro": {
+        "precision": 0.3029885434952012,
+        "recall": 0.42133729943473897,
+        "f1_dice": 0.3136047591136137,
+        "iou": 0.2080274461121824,
+        "accuracy": 0.9816126879935319,
+        "samples": 100
+      },
+      "counts": {
+        "true_positive": 2321,
+        "false_positive": 4573,
+        "false_negative": 2943,
+        "true_negative": 394842
+      },
+      "predicted": {
+        "total": 6914,
+        "mean": 69.14,
+        "median": 24.0,
+        "max": 541,
+        "on_valid_pixels": 6894,
+        "on_unknown_pixels": 20,
+        "percent_of_valid_pixels": 1.7035724611358631
+      }
+    },
+    "M3": {
+      "threshold": 0.93,
+      "in_channels": 13,
+      "micro": {
+        "precision": 0.270658939686628,
+        "recall": 0.4791033434650456,
+        "f1_dice": 0.3459059113976135,
+        "iou": 0.20912106135986733,
+        "accuracy": 0.976430701864935,
+        "valid_pixels": 404679
+      },
+      "macro": {
+        "precision": 0.25977830584036593,
+        "recall": 0.4806473177730121,
+        "f1_dice": 0.29555180159170463,
+        "iou": 0.19121097474332593,
+        "accuracy": 0.9766747360503953,
+        "samples": 100
+      },
+      "counts": {
+        "true_positive": 2522,
+        "false_positive": 6796,
+        "false_negative": 2742,
+        "true_negative": 392619
+      },
+      "predicted": {
+        "total": 9330,
+        "mean": 93.3,
+        "median": 41.5,
+        "max": 581,
+        "on_valid_pixels": 9318,
+        "on_unknown_pixels": 12,
+        "percent_of_valid_pixels": 2.302565737288073
+      }
+    }
+  },
+  "rankings": {
+    "best_f1_dice": {
+      "metric": "f1_dice",
+      "direction": "max",
+      "winners": [
+        "M2"
+      ],
+      "values": {
+        "M1": 0.32967737797447244,
+        "M2": 0.3818062181279816,
+        "M3": 0.3459059113976135
+      },
+      "order": [
+        "M2",
+        "M3",
+        "M1"
+      ]
+    },
+    "best_iou": {
+      "metric": "iou",
+      "direction": "max",
+      "winners": [
+        "M2"
+      ],
+      "values": {
+        "M1": 0.19737347361953766,
+        "M2": 0.23594591847107857,
+        "M3": 0.20912106135986733
+      },
+      "order": [
+        "M2",
+        "M3",
+        "M1"
+      ]
+    },
+    "best_precision": {
+      "metric": "precision",
+      "direction": "max",
+      "winners": [
+        "M2"
+      ],
+      "values": {
+        "M1": 0.24886220586811272,
+        "M2": 0.33666956774006385,
+        "M3": 0.270658939686628
+      },
+      "order": [
+        "M2",
+        "M3",
+        "M1"
+      ]
+    },
+    "best_recall": {
+      "metric": "recall",
+      "direction": "max",
+      "winners": [
+        "M1"
+      ],
+      "values": {
+        "M1": 0.48822188449848025,
+        "M2": 0.440919452887538,
+        "M3": 0.4791033434650456
+      },
+      "order": [
+        "M1",
+        "M3",
+        "M2"
+      ]
+    },
+    "best_accuracy": {
+      "metric": "accuracy",
+      "direction": "max",
+      "winners": [
+        "M2"
+      ],
+      "values": {
+        "M1": 0.9741745927018699,
+        "M2": 0.9814272546882838,
+        "M3": 0.976430701864935
+      },
+      "order": [
+        "M2",
+        "M3",
+        "M1"
+      ]
+    },
+    "most_predicted_fire": {
+      "metric": "total",
+      "direction": "max",
+      "winners": [
+        "M1"
+      ],
+      "values": {
+        "M1": 10332.0,
+        "M2": 6914.0,
+        "M3": 9330.0
+      },
+      "order": [
+        "M1",
+        "M3",
+        "M2"
+      ]
+    },
+    "fewest_predicted_fire": {
+      "metric": "total",
+      "direction": "min",
+      "winners": [
+        "M2"
+      ],
+      "values": {
+        "M1": 10332.0,
+        "M2": 6914.0,
+        "M3": 9330.0
+      },
+      "order": [
+        "M2",
+        "M3",
+        "M1"
+      ]
+    },
+    "most_true_positives": {
+      "metric": "true_positive",
+      "direction": "max",
+      "winners": [
+        "M1"
+      ],
+      "values": {
+        "M1": 2570.0,
+        "M2": 2321.0,
+        "M3": 2522.0
+      },
+      "order": [
+        "M1",
+        "M3",
+        "M2"
+      ]
+    },
+    "most_false_positives": {
+      "metric": "false_positive",
+      "direction": "max",
+      "winners": [
+        "M1"
+      ],
+      "values": {
+        "M1": 7757.0,
+        "M2": 4573.0,
+        "M3": 6796.0
+      },
+      "order": [
+        "M1",
+        "M3",
+        "M2"
+      ]
+    }
+  },
+  "summary": [
+    "M2 achieved the strongest overall F1/Dice (0.3818); M2 had the best IoU (0.2359).",
+    "M1 predicted the most fire pixels (10,332), while M2 predicted the fewest (6,914). Predicting more fire is not evidence of better performance.",
+    "M1 detected the most actual fire pixels (TP=2,570); M1 produced the most false alarms (FP=7,757).",
+    "Accuracy was highest for M2 (0.9814), but class imbalance makes accuracy misleading for this task.",
+    "These results cover 100 samples from the test split; 100 had valid target pixels and 0 all-unknown samples were excluded from metrics. This is a fixed-seed subset, not a full test-set evaluation or a statistical claim."
+  ],
+  "elapsed_seconds": 6.776268000015989
+}
