@@ -26,12 +26,12 @@ function detailFor(id: string): SampleDetail {
   const [split, shardSuffix, record] = id.split("_") as [Split, string, string];
   const recordIndex = Number(record);
   const allUnknown = id === "eval_00_000009";
-  const firePixels = id === "eval_00_000027" ? 21 : 5;
+  const firePixels = id === "eval_00_000014" ? 319 : 5;
   const validMask = allUnknown
     ? Array.from({ length: 64 }, () => Array<boolean>(64).fill(false))
     : TRUE_GRID();
   const previous = ZERO_GRID();
-  if (!allUnknown && id === "eval_00_000027") {
+  if (!allUnknown && id === "eval_00_000014") {
     for (let index = 0; index < 5; index += 1) previous[0][index] = 1;
     for (let index = 0; index < 13; index += 1) previous[63][63 - index] = -1;
   }
@@ -74,7 +74,7 @@ const trainIds = Array.from(
   { length: 115 },
   (_, index) => `train_00_${String(index).padStart(6, "0")}`,
 );
-const evalIds = ["eval_00_000000", "eval_00_000009", "eval_00_000027"];
+const evalIds = ["eval_00_000000", "eval_00_000009", "eval_00_000014"];
 const testIds = ["test_00_000000", "test_00_000001"];
 
 export const allSampleIds = [...trainIds, ...evalIds, ...testIds];

@@ -29,30 +29,65 @@ async function runPredictions(user: ReturnType<typeof userEvent.setup>) {
 
 describe("dashboard", () => {
   it("loads backend status and the sample catalog", async () => {
-    installMockApi();
+    const { calls } = installMockApi();
     await renderApp();
 
     expect(screen.getByText("API online")).toBeInTheDocument();
-    expect(screen.getByText("cpu")).toBeInTheDocument();
+    expect(screen.getAllByText("cpu").length).toBeGreaterThan(0);
     expect(screen.getByText("train_00_000000")).toBeInTheDocument();
     expect(screen.getByText("Select a sample.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Showing samples with >100 actual fire pixels"),
+    ).toBeInTheDocument();
+    expect(
+      calls.some(
+        (call) =>
+          call.path === "/api/samples" &&
+          call.url.includes("min_fire_pixels=101"),
+      ),
+    ).toBe(true);
     expect(screen.getAllByRole("button", { name: /train_00_/ }).length).toBe(50);
+  });
+
+  it("shows only fire-filtered samples, splits, search, and empty states", async () => {
+    installMockApi({ applyFireFilter: true });
+    const user = userEvent.setup();
+    render(<App />);
+
+    await screen.findByText("1 sample");
+    expect(screen.getByText("eval_00_000014")).toBeInTheDocument();
+    expect(screen.queryByText("train_00_000000")).not.toBeInTheDocument();
+    expect(screen.getByText("319 fire")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Test" }));
+    await screen.findByText(
+      "No samples in the test split have more than 100 actual fire pixels.",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Eval" }));
+    await screen.findByText("1 sample");
+    expect(screen.getByText("eval_00_000014")).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText("Search sample ID"), "no-such-id");
+    await screen.findByText(
+      "No sample IDs match this search with >100 fire pixels.",
+    );
   });
 
   it("searches sample IDs and debounces the request", async () => {
     const { calls } = installMockApi();
     const user = await renderApp();
 
-    await user.type(screen.getByLabelText("Search sample ID"), "eval_00_000027");
+    await user.type(screen.getByLabelText("Search sample ID"), "eval_00_000014");
 
     await screen.findByText("1 sample");
-    expect(screen.getByText("eval_00_000027")).toBeInTheDocument();
+    expect(screen.getByText("eval_00_000014")).toBeInTheDocument();
     expect(screen.queryByText("train_00_000000")).not.toBeInTheDocument();
     expect(
       calls.some(
         (call) =>
           call.path === "/api/samples" &&
-          call.url.includes("search=eval_00_000027"),
+          call.url.includes("search=eval_00_000014"),
       ),
     ).toBe(true);
   });
@@ -63,7 +98,7 @@ describe("dashboard", () => {
 
     await user.click(screen.getByRole("button", { name: "Eval" }));
     await screen.findByText("3 samples");
-    expect(screen.getByText("eval_00_000027")).toBeInTheDocument();
+    expect(screen.getByText("eval_00_000014")).toBeInTheDocument();
     expect(screen.queryByText("train_00_000000")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "All" }));
@@ -81,9 +116,9 @@ describe("dashboard", () => {
   it("selects a sample, loads masks, and runs predictions", async () => {
     const { calls } = installMockApi();
     const user = await renderApp();
-    await chooseEvalSample(user, "eval_00_000027");
+    await chooseEvalSample(user, "eval_00_000014");
 
-    expect(screen.getByText("21 fire px")).toBeInTheDocument();
+    expect(screen.getByText("319 fire px")).toBeInTheDocument();
     expect(screen.getAllByTestId("pixel-grid")).toHaveLength(2);
     expect(screen.getByLabelText(/Previous-fire mask/)).toBeInTheDocument();
     expect(screen.getByLabelText(/Ground-truth mask/)).toBeInTheDocument();
@@ -93,7 +128,7 @@ describe("dashboard", () => {
     const request = calls.find((call) => call.path === "/api/predictions");
     expect(request?.method).toBe("POST");
     expect(request?.body).toEqual({
-      sample_id: "eval_00_000027",
+      sample_id: "eval_00_000014",
       models: ["M1", "M2", "M3"],
     });
 
@@ -112,7 +147,7 @@ describe("dashboard", () => {
   it("clears previous predictions when another sample is selected", async () => {
     installMockApi();
     const user = await renderApp();
-    await chooseEvalSample(user, "eval_00_000027");
+    await chooseEvalSample(user, "eval_00_000014");
     await runPredictions(user);
     expect(screen.getByTestId("model-M1")).toBeInTheDocument();
 
@@ -142,7 +177,7 @@ describe("dashboard", () => {
   it("preserves successful models when one model fails", async () => {
     installMockApi({ predictionMode: "partial" });
     const user = await renderApp();
-    await chooseEvalSample(user, "eval_00_000027");
+    await chooseEvalSample(user, "eval_00_000014");
     await runPredictions(user);
 
     const m1 = screen.getByTestId("model-M1");
@@ -162,7 +197,7 @@ describe("dashboard", () => {
   it("switches to a shared probability scale", async () => {
     installMockApi();
     const user = await renderApp();
-    await chooseEvalSample(user, "eval_00_000027");
+    await chooseEvalSample(user, "eval_00_000014");
     await runPredictions(user);
 
     await user.click(screen.getByRole("button", { name: "Probability" }));
@@ -173,7 +208,7 @@ describe("dashboard", () => {
   it("shows a consensus map for disagreements", async () => {
     installMockApi();
     const user = await renderApp();
-    await chooseEvalSample(user, "eval_00_000027");
+    await chooseEvalSample(user, "eval_00_000014");
     await runPredictions(user);
 
     await user.click(screen.getByRole("button", { name: "Consensus" }));
@@ -255,7 +290,7 @@ describe("dashboard", () => {
     });
     const { calls } = installMockApi({ predictionGate: gate });
     const user = await renderApp();
-    await chooseEvalSample(user, "eval_00_000027");
+    await chooseEvalSample(user, "eval_00_000014");
 
     const runButton = screen.getByTestId("run-predictions");
     fireEvent.click(runButton);
@@ -272,7 +307,7 @@ describe("dashboard", () => {
   it("surfaces total failure from a 503 response", async () => {
     installMockApi({ predictionMode: "service-unavailable" });
     const user = await renderApp();
-    await chooseEvalSample(user, "eval_00_000027");
+    await chooseEvalSample(user, "eval_00_000014");
     await user.click(screen.getByTestId("run-predictions"));
 
     const alert = await screen.findByRole("alert");
@@ -287,7 +322,7 @@ describe("dashboard", () => {
     const user = await renderApp();
     await user.click(screen.getByRole("button", { name: "Eval" }));
     await screen.findByText("3 samples");
-    await user.click(screen.getByRole("button", { name: /eval_00_000027/ }));
+    await user.click(screen.getByRole("button", { name: /eval_00_000014/ }));
 
     expect(await screen.findByText("Sample unavailable")).toBeInTheDocument();
     expect(screen.getByText(/unknown sample_id/)).toBeInTheDocument();

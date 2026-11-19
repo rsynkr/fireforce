@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 
 import { api, ApiError } from "./api/client";
 import { CatalogPanel } from "./components/CatalogPanel";
@@ -20,6 +21,7 @@ import type {
 } from "./types";
 
 const PAGE_SIZE = 50;
+const MIN_FIRE_PIXELS = 101; // catalog visibility: strictly more than 100 GT fire pixels
 
 function errorMessage(error: unknown): string {
   if (error instanceof ApiError) return error.message;
@@ -123,6 +125,7 @@ export default function App() {
         {
           split: split === "all" ? undefined : split,
           search: debouncedSearch,
+          minFirePixels: MIN_FIRE_PIXELS,
           limit: PAGE_SIZE,
           offset,
         },
@@ -187,6 +190,14 @@ export default function App() {
   function changeSearch(next: string) {
     setSearch(next);
     setOffset(0);
+  }
+
+  function handleTabKey(event: ReactKeyboardEvent<HTMLElement>) {
+    if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+    event.preventDefault();
+    const next = section === "inspector" ? "evaluation" : "inspector";
+    setSection(next);
+    document.getElementById(`tab-${next}`)?.focus();
   }
 
   async function runPrediction() {
@@ -256,7 +267,7 @@ export default function App() {
             device <b>{health?.device ?? "—"}</b>
           </span>
           <span className="header-fact">
-            samples <b>{count(health?.data.sample_count)}</b>
+            dataset <b>{count(health?.data.sample_count)}</b>
           </span>
           <span
             className="header-fact is-fingerprint"
@@ -274,6 +285,7 @@ export default function App() {
             onSplit={changeSplit}
             search={search}
             onSearch={changeSearch}
+            minFirePixels={MIN_FIRE_PIXELS}
             data={list}
             listLoading={listLoading}
             listError={listError}
@@ -287,11 +299,19 @@ export default function App() {
         ) : null}
 
         <div className="workspace" id="workspace">
-          <nav className="workspace-tabs" role="tablist" aria-label="Sections">
+          <nav
+            className="workspace-tabs"
+            role="tablist"
+            aria-label="Sections"
+            onKeyDown={handleTabKey}
+          >
             <button
               type="button"
               role="tab"
+              id="tab-inspector"
+              aria-controls="panel-inspector"
               aria-selected={section === "inspector"}
+              tabIndex={section === "inspector" ? 0 : -1}
               className={section === "inspector" ? "is-active" : undefined}
               onClick={() => setSection("inspector")}
             >
@@ -300,7 +320,10 @@ export default function App() {
             <button
               type="button"
               role="tab"
+              id="tab-evaluation"
+              aria-controls="panel-evaluation"
               aria-selected={section === "evaluation"}
+              tabIndex={section === "evaluation" ? 0 : -1}
               className={section === "evaluation" ? "is-active" : undefined}
               onClick={() => setSection("evaluation")}
             >
@@ -309,9 +332,21 @@ export default function App() {
           </nav>
 
           {section === "evaluation" ? (
-            <EvaluationView />
+            <div
+              className="tab-panel"
+              id="panel-evaluation"
+              role="tabpanel"
+              aria-labelledby="tab-evaluation"
+            >
+              <EvaluationView />
+            </div>
           ) : (
-            <>
+            <div
+              className="tab-panel"
+              id="panel-inspector"
+              role="tabpanel"
+              aria-labelledby="tab-inspector"
+            >
           {healthError ? (
             <div className="banner is-error" role="alert">
               <strong>Backend offline</strong>
@@ -327,28 +362,64 @@ export default function App() {
 
           {!selectedId ? (
             <section className="empty-workspace">
-              <p className="empty-kicker">Workspace · 64 × 64</p>
-              <h1>Select a sample.</h1>
-              <p className="lede">
-                Pick a stable sample ID from the catalog to inspect the previous-fire
-                input, the next-day ground truth, and compare M1, M2 and M3.
-              </p>
-              <dl className="empty-facts">
-                <div>
-                  <dt>Models</dt>
-                  <dd>M1 · 1 ch</dd>
-                  <dd>M2 · 8 ch</dd>
-                  <dd>M3 · 13 ch</dd>
-                </div>
-                <div>
-                  <dt>Output</dt>
-                  <dd>64 × 64 fire masks</dd>
-                  <dd>valid-pixel metrics</dd>
-                </div>
-              </dl>
-              <p className="fineprint">
-                Research output only. Not an operational wildfire forecast.
-              </p>
+              <div className="empty-copy">
+                <p className="empty-kicker">Workspace · 64 × 64</p>
+                <h1>Select a sample.</h1>
+                <p className="lede">
+                  Pick a stable sample ID from the catalog to inspect the previous-fire
+                  input, the next-day ground truth, and compare M1, M2 and M3.
+                </p>
+                <p className="fineprint">
+                  Research output only. Not an operational wildfire forecast.
+                </p>
+              </div>
+
+              <aside className="empty-aside" aria-label="Getting started">
+                <p className="empty-kicker">Start here</p>
+                <ol className="empty-steps">
+                  <li>
+                    <span>01</span>
+                    <div>
+                      <b>Choose a sample</b>
+                      <small>
+                        Only IDs with more than 100 actual fire pixels are listed.
+                      </small>
+                    </div>
+                  </li>
+                  <li>
+                    <span>02</span>
+                    <div>
+                      <b>Inspect inputs</b>
+                      <small>Previous fire and ground truth, both 64×64.</small>
+                    </div>
+                  </li>
+                  <li>
+                    <span>03</span>
+                    <div>
+                      <b>Run and compare</b>
+                      <small>M1, M2 and M3 on the same record.</small>
+                    </div>
+                  </li>
+                </ol>
+                <dl className="empty-stats">
+                  <div>
+                    <dt>Visible</dt>
+                    <dd>{count(list?.total)}</dd>
+                  </div>
+                  <div>
+                    <dt>Indexed</dt>
+                    <dd>{count(health?.data.sample_count)}</dd>
+                  </div>
+                  <div>
+                    <dt>Models</dt>
+                    <dd>3</dd>
+                  </div>
+                  <div>
+                    <dt>Device</dt>
+                    <dd>{health?.device ?? "—"}</dd>
+                  </div>
+                </dl>
+              </aside>
             </section>
           ) : detailLoading ? (
             <section className="panel" aria-busy="true">
@@ -407,7 +478,7 @@ export default function App() {
               />
             </>
           ) : null}
-            </>
+            </div>
           )}
 
           <footer className="app-footer">

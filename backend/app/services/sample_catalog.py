@@ -15,7 +15,7 @@ import json
 import os
 import re
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Iterable
 
 import numpy as np
 import tensorflow as tf
@@ -489,6 +489,33 @@ def save_manifest(manifest: dict[str, Any], path: str) -> None:
     with open(path, "w", encoding="utf-8", newline="\n") as handle:
         json.dump(manifest, handle, indent=2, ensure_ascii=True)
         handle.write("\n")
+
+
+def filter_sample_entries(
+    entries: Iterable[SampleEntry],
+    split: str | None = None,
+    search: str | None = None,
+    min_fire_pixels: int | None = None,
+) -> list[SampleEntry]:
+    """Filter catalog entries by split, ID substring, and minimum GT fire pixels.
+
+    ``min_fire_pixels`` is inclusive: 101 means strictly more than 100. It uses
+    the manifest's ground-truth ``target_fire_pixels``; no TFRecord reads occur.
+    """
+    needle = search.strip().lower() if search else None
+    selected: list[SampleEntry] = []
+    for entry in entries:
+        if split is not None and entry.split != split:
+            continue
+        if (
+            min_fire_pixels is not None
+            and entry.target_fire_pixels < min_fire_pixels
+        ):
+            continue
+        if needle is not None and needle not in entry.sample_id.lower():
+            continue
+        selected.append(entry)
+    return selected
 
 
 def load_catalog(manifest_path: str, data_root: str) -> SampleCatalog:

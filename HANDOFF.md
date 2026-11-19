@@ -116,6 +116,9 @@ Manifest: `artifacts/sample_manifest.json` (generated, gitignored, reproducible)
 - File SHA-256 `2634d3d3e13c212ba28ce4ac191652c4d5feb2fe1429b776b8b7aadd18dc9505`
 - 44 samples have all target pixels unknown; 16,433 contain at least one fire
   pixel; 845,195 fire pixels total; densest sample has 952 fire pixels.
+- Catalog visibility: 2,377 samples have **more than 100** actual fire pixels
+  (train 1,799 / eval 328 / test 250). The UI shows only these; the manifest and
+  API retain all 18,545 samples.
 - There is **no all-fire target** in the dataset; dense-fire is represented by
   `train_11_000326` (952/4096).
 
@@ -197,10 +200,18 @@ python backend/tools/run_evaluation.py
 
 ### `GET /api/samples`
 
-Query: `split=train|eval|test`, `search=<substring>`, `limit=1..500` (default
-50), `offset>=0`. Returns `{total, limit, offset, items[]}` where each item has
-`sample_id, split, shard, record_index, target_valid_pixels,
-target_fire_pixels, target_unknown_pixels, all_unknown`.
+Query: `split=train|eval|test`, `search=<substring>`, `min_fire_pixels=<int>`,
+`limit=1..500` (default 50), `offset>=0`. Returns
+`{total, limit, offset, items[]}` where each item has `sample_id, split, shard,
+record_index, target_valid_pixels, target_fire_pixels,
+target_unknown_pixels, all_unknown`.
+
+`min_fire_pixels` is inclusive and filters on the manifest's ground-truth fire
+count without rescanning TFRecords. The dashboard sends `min_fire_pixels=101`,
+showing only samples with **more than 100** actual fire pixels. Omitting the
+parameter returns the full catalog: 18,545 total; 2,377 qualify (>100), split as
+train 1,799 / eval 328 / test 250. Filtering, split, search, and pagination
+compose in that order (filter first, then paginate).
 
 ### `GET /api/samples/{sample_id}`
 
@@ -370,17 +381,23 @@ recovery was verified live: stop backend → `API offline`, 0 rows → restart �
 Production bundle at 1440×1000 and 390×844 against the real backend. Canvas
 backing store is 64×64 with `image-rendering: pixelated`; masks share identical
 widths; probability maps use one shared 0–1 scale; consensus and synchronized
-inspector verified. The Evaluation tab renders five tables, four comparison
-charts, three confusion matrices, rankings, generated summary, and metric
-definitions at both widths. Screenshots: `docs/screenshots/`.
+inspector verified. Each mask has 0–64 coordinate rulers and the inspector draws
+row/column guides plus a cell box across all masks. The catalog note shows
+“Showing samples with >100 actual fire pixels”, the filtered count is 2,377, and
+the 100/101 boundary was verified in the browser (`train_00_000160` excluded,
+`train_00_000844` included). The landing view includes a Start here briefing and
+live Visible/Indexed/Models/Device readouts. The Evaluation tab promotes the
+strongest F1/Dice result above five tables, four comparison charts, three
+confusion matrices, rankings, generated summary, and metric definitions at both
+widths. Screenshots: `docs/screenshots/`.
 
 ### Test suites
 
-- Backend: `python -m pytest backend\tests -q` → **105 passed, 0 failed**
-  (12.42 s final run; 11–18 s depending on load).
-- Frontend: `npm test` → **16 passed, 0 failed** (5.14 s final run after `npm ci`).
-- Build: `npm run build` → 263.35 kB JS (79.73 kB gzip), 24.87 kB CSS
-  (5.25 kB gzip), built in 231 ms.
+- Backend: `python -m pytest backend\tests -q` → **109 passed, 0 failed**
+  (12.61 s final run; 11–18 s depending on load).
+- Frontend: `npm test` → **17 passed, 0 failed** (8.15 s final run after the UI pass).
+- Build: `npm run build` → 266.92 kB JS (80.44 kB gzip), 27.79 kB CSS
+  (5.74 kB gzip), built in 550 ms.
 - Validation: `python backend/tools/validate_phase5.py` → 7 cases, 21 pairs,
   6 Phase 0 tensor checks, all exact, 1.39 s.
 - HTTP: `python backend/tools/smoke_http.py` → all checks passed.
@@ -487,7 +504,12 @@ validator treat it as immutable evidence.
    improve it.
 4. **CPU-only validation.** `torch.cuda.is_available()` is false on the handoff
    machine; the CUDA path is implemented but untested.
-5. **No all-fire target exists** in the dataset. Dense-fire coverage is
+5. **The catalog is visibility-filtered.** All four tabs show only samples with
+   more than 100 actual fire pixels (2,377 of 18,545). This hides 41 samples at
+   exactly 100 and all 44 all-unknown samples, so the all-unknown UI state is not
+   reachable through the catalog; the manifest, API, and `eval_00_000009` tests
+   still cover them. No samples were deleted.
+6. **No all-fire target exists** in the dataset. Dense-fire coverage is
    `train_11_000326` (952/4096 fire).
 6. **TFRecord lookup is sequential.** High record indices require scanning from
    the shard start; no cache/index was added because measurements did not

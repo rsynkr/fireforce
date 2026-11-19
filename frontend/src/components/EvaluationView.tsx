@@ -269,6 +269,8 @@ export function EvaluationView() {
   }
 
   const { counts, models, rankings, sampling } = data;
+  const bestF1 = rankings.best_f1_dice;
+  const bestModel = models[bestF1.winners[0]];
 
   return (
     <section className="evaluation" aria-labelledby="evaluation-heading">
@@ -301,6 +303,35 @@ export function EvaluationView() {
           {data.thresholds.M1.toFixed(2)} · M2 {data.thresholds.M2.toFixed(2)} · M3{" "}
           {data.thresholds.M3.toFixed(2)}.
         </p>
+      </div>
+
+      <div className="eval-highlight">
+        <div className="eval-highlight-lead">
+          <p className="empty-kicker">Strongest overall · F1 / Dice</p>
+          <h2>{joinModels(bestF1.winners)}</h2>
+          <p className="fineprint">
+            Best F1/Dice on this fixed subset. Predicting more fire is not
+            evidence of better performance.
+          </p>
+        </div>
+        <dl className="eval-highlight-stats">
+          <div>
+            <dt>F1 / Dice</dt>
+            <dd>{metric(bestModel.micro.f1_dice)}</dd>
+          </div>
+          <div>
+            <dt>IoU</dt>
+            <dd>{metric(bestModel.micro.iou)}</dd>
+          </div>
+          <div>
+            <dt>Precision</dt>
+            <dd>{metric(bestModel.micro.precision)}</dd>
+          </div>
+          <div>
+            <dt>Recall</dt>
+            <dd>{metric(bestModel.micro.recall)}</dd>
+          </div>
+        </dl>
       </div>
 
       <section className="panel" aria-labelledby="eval-overall">

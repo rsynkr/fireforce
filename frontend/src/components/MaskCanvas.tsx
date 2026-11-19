@@ -102,6 +102,8 @@ export function consensusPixels(votes: number[][], maxVotes: number): Uint8Clamp
   return buffer;
 }
 
+const RULER_TICKS = [0, 16, 32, 48, 64];
+
 interface PixelGridProps {
   pixels: Uint8ClampedArray | null;
   label: string;
@@ -139,32 +141,60 @@ export function PixelGrid({
   }
 
   return (
-    <div
-      className={`pixel-grid${className ? ` ${className}` : ""}${pixels ? "" : " is-empty"}`}
-      role="img"
-      aria-label={label}
-      onPointerMove={pixels ? handlePointer : undefined}
-      onPointerDown={pixels ? handlePointer : undefined}
-      onPointerLeave={pixels && onHover ? () => onHover(null) : undefined}
-      data-testid="pixel-grid"
-    >
-      {pixels ? (
-        <>
-          <canvas ref={canvasRef} width={64} height={64} aria-hidden="true" />
-          {hovered ? (
-            <span
-              aria-hidden="true"
-              className="pixel-cursor"
-              style={{
-                left: `${(hovered.col / 64) * 100}%`,
-                top: `${(hovered.row / 64) * 100}%`,
-              }}
-            />
-          ) : null}
-        </>
-      ) : (
-        <span className="pixel-empty">{emptyLabel}</span>
-      )}
+    <div className={`pixel-frame${className ? ` ${className}` : ""}`}>
+      <div className="pixel-ruler is-top" aria-hidden="true">
+        {RULER_TICKS.map((tick) => (
+          <span key={tick} style={{ left: `${(tick / 64) * 100}%` }}>
+            {tick}
+          </span>
+        ))}
+      </div>
+      <div className="pixel-ruler is-left" aria-hidden="true">
+        {RULER_TICKS.map((tick) => (
+          <span key={tick} style={{ top: `${(tick / 64) * 100}%` }}>
+            {tick}
+          </span>
+        ))}
+      </div>
+      <div
+        className={`pixel-grid${pixels ? "" : " is-empty"}`}
+        role="img"
+        aria-label={label}
+        onPointerMove={pixels ? handlePointer : undefined}
+        onPointerDown={pixels ? handlePointer : undefined}
+        onPointerLeave={pixels && onHover ? () => onHover(null) : undefined}
+        data-testid="pixel-grid"
+      >
+        {pixels ? (
+          <>
+            <canvas ref={canvasRef} width={64} height={64} aria-hidden="true" />
+            {hovered ? (
+              <>
+                <span
+                  aria-hidden="true"
+                  className="pixel-guide is-horizontal"
+                  style={{ top: `${((hovered.row + 0.5) / 64) * 100}%` }}
+                />
+                <span
+                  aria-hidden="true"
+                  className="pixel-guide is-vertical"
+                  style={{ left: `${((hovered.col + 0.5) / 64) * 100}%` }}
+                />
+                <span
+                  aria-hidden="true"
+                  className="pixel-cursor"
+                  style={{
+                    left: `${(hovered.col / 64) * 100}%`,
+                    top: `${(hovered.row / 64) * 100}%`,
+                  }}
+                />
+              </>
+            ) : null}
+          </>
+        ) : (
+          <span className="pixel-empty">{emptyLabel}</span>
+        )}
+      </div>
     </div>
   );
 }

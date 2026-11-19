@@ -16,6 +16,7 @@ interface CatalogPanelProps {
   onSplit: (split: SplitFilter) => void;
   search: string;
   onSearch: (search: string) => void;
+  minFirePixels: number;
   data: SampleListResponse | null;
   listLoading: boolean;
   listError: string | null;
@@ -32,6 +33,7 @@ export function CatalogPanel({
   onSplit,
   search,
   onSearch,
+  minFirePixels,
   data,
   listLoading,
   listError,
@@ -49,6 +51,10 @@ export function CatalogPanel({
   return (
     <aside className="catalog" aria-label="Sample catalog">
       <SectionLabel index="01">Catalog</SectionLabel>
+
+      <p className="catalog-filter-note">
+        Showing samples with &gt;{minFirePixels - 1} actual fire pixels
+      </p>
 
       <div className="segmented" role="group" aria-label="Filter by split">
         {SPLITS.map((option) => (
@@ -116,7 +122,13 @@ export function CatalogPanel({
             ))
           ) : (
             <p className="empty-note">
-              {listLoading ? "Loading sample IDs…" : "No sample IDs match this view."}
+              {listLoading
+                ? "Loading sample IDs…"
+                : search.trim()
+                  ? `No sample IDs match this search with >${minFirePixels - 1} fire pixels.`
+                  : split === "all"
+                    ? `No samples have more than ${minFirePixels - 1} actual fire pixels.`
+                    : `No samples in the ${split} split have more than ${minFirePixels - 1} actual fire pixels.`}
             </p>
           )}
         </nav>

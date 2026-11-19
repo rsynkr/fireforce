@@ -23,6 +23,7 @@ export interface MockOptions {
   detail404?: boolean;
   predictionGate?: Promise<void>;
   evaluationUnavailable?: boolean;
+  applyFireFilter?: boolean;
 }
 
 function json(body: unknown, status = 200): Response {
@@ -66,12 +67,16 @@ export function installMockApi(options: MockOptions = {}) {
     if (url.pathname === "/api/samples") {
       const split = url.searchParams.get("split") as Split | null;
       const search = (url.searchParams.get("search") ?? "").toLowerCase();
+      const minFire = Number(url.searchParams.get("min_fire_pixels") ?? 0);
       const limit = Number(url.searchParams.get("limit") ?? 50);
       const offset = Number(url.searchParams.get("offset") ?? 0);
       const filtered = allSamples.filter(
         (sample) =>
           (!split || sample.split === split) &&
-          (!search || sample.sample_id.toLowerCase().includes(search)),
+          (!search || sample.sample_id.toLowerCase().includes(search)) &&
+          (!options.applyFireFilter ||
+            minFire === 0 ||
+            sample.target_fire_pixels >= minFire),
       );
       const response: SampleListResponse = {
         total: filtered.length,
@@ -87,7 +92,7 @@ export function installMockApi(options: MockOptions = {}) {
       if (!allSampleIds.includes(sampleId)) {
         return json({ detail: `unknown sample_id '${sampleId}'` }, 404);
       }
-      if (options.detail404 && sampleId === "eval_00_000027") {
+      if (options.detail404 && sampleId === "eval_00_000014") {
         return json({ detail: `unknown sample_id '${sampleId}'` }, 404);
       }
       return json(sampleDetailFixture(sampleId));

@@ -96,6 +96,70 @@ def test_list_samples_split_filter_and_search(api_client):
     assert empty["items"] == []
 
 
+def test_list_samples_fire_filter_combines_with_split_search_pagination(api_client):
+    response = api_client.get(
+        "/api/samples", params={"min_fire_pixels": 101, "limit": 10, "offset": 0}
+    )
+    body = response.json()
+    assert response.status_code == 200
+    assert body["total"] == 2377
+    assert len(body["items"]) == 10
+    assert all(item["target_fire_pixels"] > 100 for item in body["items"])
+
+    for split, expected in (("train", 1799), ("eval", 328), ("test", 250)):
+        split_body = api_client.get(
+            "/api/samples", params={"split": split, "min_fire_pixels": 101}
+        ).json()
+        assert split_body["total"] == expected
+        assert all(item["split"] == split for item in split_body["items"])
+        assert all(item["target_fire_pixels"] > 100 for item in split_body["items"])
+
+    # Exact boundary: 100 excluded, 101 included.
+    at_100 = api_client.get(
+        "/api/samples",
+        params={"search": "train_00_000160", "min_fire_pixels": 101},
+    ).json()
+    assert at_100["total"] == 0
+    without_filter = api_client.get(
+        "/api/samples", params={"search": "train_00_000160"}
+    ).json()
+    assert without_filter["total"] == 1
+
+    at_101 = api_client.get(
+        "/api/samples",
+        params={"search": "train_00_000844", "min_fire_pixels": 101},
+    ).json()
+    assert at_101["total"] == 1
+    assert at_101["items"][0]["target_fire_pixels"] == 101
+
+    # Pagination is applied after filtering.
+    last_page = api_client.get(
+        "/api/samples", params={"min_fire_pixels": 101, "limit": 10, "offset": 2370}
+    ).json()
+    assert last_page["total"] == 2377
+    assert len(last_page["items"]) == 7
+    assert all(item["target_fire_pixels"] > 100 for item in last_page["items"])
+
+    # Combined split + search + filter.
+    combined = api_client.get(
+        "/api/samples",
+        params={
+            "split": "eval",
+            "search": "eval_00_000014",
+            "min_fire_pixels": 101,
+        },
+    ).json()
+    assert combined["total"] == 1
+    assert combined["items"][0]["target_fire_pixels"] == 319
+
+
+def test_list_samples_fire_filter_rejects_negative(api_client):
+    assert (
+        api_client.get("/api/samples", params={"min_fire_pixels": -1}).status_code
+        == 422
+    )
+
+
 @pytest.mark.parametrize(
     "params",
     [

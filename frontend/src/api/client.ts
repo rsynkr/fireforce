@@ -89,6 +89,7 @@ export const api = {
     params: {
       split?: Split;
       search?: string;
+      minFirePixels?: number;
       limit?: number;
       offset?: number;
     },
@@ -97,6 +98,9 @@ export const api = {
     const query = new URLSearchParams();
     if (params.split) query.set("split", params.split);
     if (params.search?.trim()) query.set("search", params.search.trim());
+    if (params.minFirePixels != null) {
+      query.set("min_fire_pixels", String(params.minFirePixels));
+    }
     if (params.limit != null) query.set("limit", String(params.limit));
     if (params.offset != null) query.set("offset", String(params.offset));
     const suffix = query.size ? `?${query.toString()}` : "";

@@ -13,8 +13,10 @@ from app.services.sample_catalog import (
     PIXELS_PER_RECORD,
     RecordIndexError,
     SampleCatalog,
+    SampleEntry,
     SampleNotFoundError,
     build_manifest,
+    filter_sample_entries,
     load_catalog,
     make_sample_id,
     save_manifest,
@@ -242,6 +244,65 @@ def test_manifest_round_trip(dataset, tmp_path):
     }
     with open(path, encoding="utf-8") as handle:
         assert json.load(handle) == dataset["manifest"]
+
+
+# ------------------------------------------------------- catalog fire filter
+
+
+def _sample_entry(sample_id: str, fire_pixels: int) -> SampleEntry:
+    return SampleEntry(
+        sample_id=sample_id,
+        split="train",
+        shard="next_day_wildfire_spread_train_00.tfrecord",
+        record_index=0,
+        target_valid_pixels=4096,
+        target_fire_pixels=fire_pixels,
+    )
+
+
+def test_fire_filter_threshold_is_strictly_greater_than_100():
+    entries = [
+        _sample_entry("train_00_000000", 0),
+        _sample_entry("train_00_000001", 100),
+        _sample_entry("train_00_000002", 101),
+        _sample_entry("train_00_000003", 500),
+    ]
+
+    selected = filter_sample_entries(entries, min_fire_pixels=101)
+    assert [entry.sample_id for entry in selected] == [
+        "train_00_000002",
+        "train_00_000003",
+    ]
+
+    inclusive_100 = filter_sample_entries(entries, min_fire_pixels=100)
+    assert [entry.sample_id for entry in inclusive_100] == [
+        "train_00_000001",
+        "train_00_000002",
+        "train_00_000003",
+    ]
+
+    assert filter_sample_entries(entries, min_fire_pixels=501) == []
+
+
+def test_fire_filter_combines_with_split_and_search():
+    entries = [
+        _sample_entry("train_00_000002", 101),
+        SampleEntry(
+            sample_id="eval_00_000014",
+            split="eval",
+            shard="next_day_wildfire_spread_eval_00.tfrecord",
+            record_index=14,
+            target_valid_pixels=4096,
+            target_fire_pixels=319,
+        ),
+    ]
+    assert [e.sample_id for e in filter_sample_entries(
+        entries, split="eval", min_fire_pixels=101
+    )] == ["eval_00_000014"]
+    assert [e.sample_id for e in filter_sample_entries(
+        entries, search="000002", min_fire_pixels=101
+    )] == ["train_00_000002"]
+    assert filter_sample_entries(entries, search="000002", split="eval") == []
 
 
 # ------------------------------------------------------------- real artifacts

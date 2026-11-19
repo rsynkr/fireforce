@@ -82,3 +82,19 @@ header drops secondary facts and metric cells become a 2×2 grid.
   dataset; they would not make sense on another dashboard.
 - Honest empty, partial, and all-unknown states are designed rather than hidden
   behind a spinner or zero-filled metrics.
+
+## Instrument refinement (post-evaluation)
+
+- **Masks as measurements.** Every 64×64 canvas has 0–64 coordinate rulers on
+  the top and left, so a pixel readout can be located rather than guessed.
+- **One inspector.** Hovering any mask draws the same row and column guides plus
+  a cell box across inputs and all model masks. The readout reports the target
+  class and per-model hit/miss at that coordinate.
+- **Landing as a briefing.** The empty workspace pairs the display headline with
+  a three-step “Start here” column and live Visible / Indexed / Models / Device
+  readouts, instead of leaving the canvas empty.
+- **Evaluation headline.** The strongest F1/Dice result is promoted above the
+  tables with its IoU, precision and recall, while the full rankings and
+  generated interpretation remain below.
+- **Tab semantics.** Inspector/Evaluation are real tab controls with roving
+  focus, arrow-key switching, `aria-controls`, and labelled tab panels.

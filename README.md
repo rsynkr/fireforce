@@ -5,6 +5,10 @@ wildfire-spread data. Pick a stable sample ID, inspect the previous-fire and
 ground-truth masks, run M1/M2/M3 on the same record, and compare binary masks,
 probability maps, consensus, and valid-pixel metrics.
 
+The catalog intentionally shows only samples with **more than 100 actual
+ground-truth fire pixels** (2,377 of 18,545). All samples remain in the manifest
+and API; omit `min_fire_pixels` to query the full catalog.
+
 This is a research prototype, **not an operational wildfire forecast**.
 
 ![Binary comparison with synchronized pixel inspector](docs/screenshots/03-binary-inspector.png)

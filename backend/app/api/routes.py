@@ -28,6 +28,7 @@ from app.services.sample_catalog import (
     ManifestIntegrityError,
     SampleEntry,
     SampleNotFoundError,
+    filter_sample_entries,
 )
 from app.state import AppState
 
@@ -96,6 +97,7 @@ def list_samples(
     request: Request,
     split: SplitName | None = None,
     search: str | None = Query(default=None, max_length=64),
+    min_fire_pixels: int | None = Query(default=None, ge=0),
     limit: int = Query(default=50, ge=1, le=500),
     offset: int = Query(default=0, ge=0),
 ) -> dict[str, Any]:
@@ -106,13 +108,12 @@ def list_samples(
             detail=f"sample catalog unavailable: {state.catalog_error}",
         )
 
-    needle = search.strip().lower() if search else None
-    entries = [
-        entry
-        for entry in state.catalog.list_entries()
-        if (split is None or entry.split == split)
-        and (needle is None or needle in entry.sample_id.lower())
-    ]
+    entries = filter_sample_entries(
+        state.catalog.list_entries(),
+        split=split,
+        search=search,
+        min_fire_pixels=min_fire_pixels,
+    )
 
     page = entries[offset : offset + limit]
     return {
